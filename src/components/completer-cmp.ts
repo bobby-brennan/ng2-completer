@@ -24,11 +24,12 @@ const COMPLETER_CONTROL_VALUE_ACCESSOR = {
     selector: "ng2-completer",
     template: `
         <div class="completer-holder" ctrCompleter>
-            <input #ctrInput [attr.id]="inputId.length > 0 ? inputId : null" type="search" class="completer-input" ctrInput [ngClass]="inputClass" 
+            <input #ctrInput [attr.id]="inputId.length > 0 ? inputId : null" type="search" class="completer-input" ctrInput [ngClass]="inputClass"
                 [(ngModel)]="searchStr" (ngModelChange)="onChange($event)" [attr.name]="inputName" [placeholder]="placeholder"
-                [attr.maxlength]="maxChars" [tabindex]="fieldTabindex" [disabled]="disableInput" 
+                [attr.maxlength]="maxChars" [tabindex]="fieldTabindex" [disabled]="disableInput"
                 [clearSelected]="clearSelected" [clearUnselected]="clearUnselected"
-                [overrideSuggested]="overrideSuggested" [openOnFocus]="openOnFocus" [fillHighlighted]="fillHighlighted" 
+                [overrideSuggested]="overrideSuggested" [openOnFocus]="openOnFocus" [fillHighlighted]="fillHighlighted"
+                [tokenSeparator]="tokenSeparator"
                 (blur)="onBlur()" (focus)="onFocus()" (keyup)="onKeyup($event)" (keydown)="onKeydown($event)"
                 autocomplete="off" autocorrect="off" autocapitalize="off" />
 
@@ -135,6 +136,7 @@ export class CompleterCmp implements OnInit, ControlValueAccessor, AfterViewChec
     @Input() public openOnFocus = false;
     @Input() public initialValue: any;
     @Input() public autoHighlight = false;
+    @Input() public tokenSeparator:string = null;
 
     @Output() public selected = new EventEmitter<CompleterItem>();
     @Output() public highlighted = new EventEmitter<CompleterItem>();

@@ -27,6 +27,7 @@ export class CtrInput {
     @Input("overrideSuggested") public overrideSuggested = false;
     @Input("fillHighlighted") public fillHighlighted = true;
     @Input("openOnFocus") public openOnFocus = false;
+    @Input("tokenSeparator") public tokenSeparator:string = null;
 
     @Output() public ngModelChange: EventEmitter<any> = new EventEmitter();
 
@@ -35,6 +36,19 @@ export class CtrInput {
     private blurTimer: Subscription = null;
 
     constructor( @Host() private completer: CtrCompleter, private ngModel: NgModel, private el: ElementRef) {
+        let getValueFromItem = (item: CompleterItem) => {
+            if (!item) {
+                return;
+            }
+            if (this.tokenSeparator) {
+                let tokens = this.searchStr.split(this.tokenSeparator);
+                tokens[tokens.length - 1] = item.title;
+                return tokens.join(this.tokenSeparator);
+            } else {
+                return item.title;
+            }
+        }
+
         this.completer.selected.subscribe((item: CompleterItem) => {
             if (!item) {
                 return;
@@ -42,29 +56,34 @@ export class CtrInput {
             if (this.clearSelected) {
                 this.searchStr = "";
             } else {
-                this.searchStr = item.title;
+                this.searchStr = getValueFromItem(item);
             }
             this.ngModelChange.emit(this.searchStr);
         });
         this.completer.highlighted.subscribe((item: CompleterItem) => {
             if (this.fillHighlighted) {
                 if (item) {
-                    this._displayStr = item.title;
-                    this.ngModelChange.emit(item.title);
+                    this._displayStr = getValueFromItem(item);
                 } else {
                     this._displayStr = this.searchStr;
-                    this.ngModelChange.emit(this.searchStr);
                 }
+                this.ngModelChange.emit(this._displayStr);
             }
         });
         this.ngModel.valueChanges.subscribe(value => {
             if (!isNil(value) && this._displayStr !== value) {
-                if (this.searchStr !== value) {
-                    this.completer.search(value);
-                }
-                this.searchStr = value;
+                this.search(value);
             }
         });
+    }
+
+    search(value:string) {
+        this.searchStr = value;
+        if (this.tokenSeparator) {
+            let tokens = value.split(this.tokenSeparator);
+            value = tokens[tokens.length - 1];
+        }
+        this.completer.search(value);
     }
 
     @HostListener("keyup", ["$event"])
@@ -80,7 +99,7 @@ export class CtrInput {
         else if (event.keyCode === KEY_DW) {
             event.preventDefault();
 
-            this.completer.search(this.searchStr);
+            this.search(this.searchStr);
         }
         else if (event.keyCode === KEY_ES) {
             this.restoreSearchValue();
@@ -170,7 +189,6 @@ export class CtrInput {
 
     private handleSelection() {
         if (this.completer.hasHighlighted()) {
-            this._searchStr = "";
             this.completer.selectCurrent();
         } else if (this.overrideSuggested) {
             this.completer.onSelected({ title: this.searchStr, originalObject: null });
