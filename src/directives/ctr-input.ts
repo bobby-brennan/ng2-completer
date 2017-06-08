@@ -79,7 +79,7 @@ export class CtrInput {
 
     search(value:string) {
         this.searchStr = value;
-        if (this.tokenSeparator) {
+        if (value && this.tokenSeparator) {
             let tokens = value.split(this.tokenSeparator);
             value = tokens[tokens.length - 1];
         }
