@@ -71,7 +71,7 @@ var CtrInput = (function () {
     }
     CtrInput.prototype.search = function (value) {
         this.searchStr = value;
-        if (this.tokenSeparator) {
+        if (value && this.tokenSeparator) {
             var tokens = value.split(this.tokenSeparator);
             value = tokens[tokens.length - 1];
         }
