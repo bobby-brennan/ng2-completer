@@ -1,7 +1,7 @@
-import { ElementRef, Renderer, OnInit } from "@angular/core";
+import { ElementRef, Renderer, OnDestroy } from "@angular/core";
 import { CompleterItem } from "../components/completer-item";
 import { CtrDropdown, CtrRowElement } from "./ctr-dropdown";
-export declare class CtrRow implements CtrRowElement, OnInit {
+export declare class CtrRow implements CtrRowElement, OnDestroy {
     private el;
     private renderer;
     private dropdown;
@@ -9,7 +9,7 @@ export declare class CtrRow implements CtrRowElement, OnInit {
     private _rowIndex;
     private _item;
     constructor(el: ElementRef, renderer: Renderer, dropdown: CtrDropdown);
-    ngOnInit(): void;
+    ngOnDestroy(): void;
     ctrRow: number;
     dataItem: CompleterItem;
     onClick(event: any): void;

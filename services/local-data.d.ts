@@ -7,5 +7,5 @@ export declare class LocalData extends CompleterBaseData {
     constructor();
     data(data: any[] | Observable<any[]>): this;
     search(term: string): void;
-    convertToItem(data: any): CompleterItem;
+    convertToItem(data: any): CompleterItem | null;
 }

@@ -19,12 +19,14 @@ export declare class CtrList implements OnInit, CompleterList {
     ctrListPause: number;
     ctrListAutoMatch: boolean;
     ctrListAutoHighlight: boolean;
+    ctrListDisplaySearching: boolean;
     private _dataService;
     private term;
     private searchTimer;
     private clearTimer;
     private ctx;
     private _initialValue;
+    private viewRef;
     constructor(completer: CtrCompleter, templateRef: TemplateRef<CtrListContext>, viewContainer: ViewContainerRef, cd: ChangeDetectorRef);
     ngOnInit(): void;
     dataService: CompleterData;

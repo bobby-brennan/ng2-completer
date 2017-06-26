@@ -1,4 +1,4 @@
-import { AfterViewInit, ElementRef, OnDestroy, OnInit } from "@angular/core";
+import { AfterViewInit, ElementRef, OnDestroy } from "@angular/core";
 import { CompleterItem } from "../components/completer-item";
 import { CtrCompleter, CompleterDropdown } from "./ctr-completer";
 export interface CtrRowElement {
@@ -11,19 +11,19 @@ export declare class CtrRowItem {
     index: number;
     constructor(row: CtrRowElement, index: number);
 }
-export declare class CtrDropdown implements CompleterDropdown, OnDestroy, OnInit, AfterViewInit {
+export declare class CtrDropdown implements CompleterDropdown, OnDestroy, AfterViewInit {
     private completer;
     private el;
     private rows;
     private currHighlighted;
     private isScrollOn;
     constructor(completer: CtrCompleter, el: ElementRef);
-    ngOnInit(): void;
     ngOnDestroy(): void;
     ngAfterViewInit(): void;
     onMouseDown(event: any): void;
     registerRow(row: CtrRowItem): void;
-    highlightRow(index: number): void;
+    unregisterRow(rowIndex: number): void;
+    highlightRow(index: number | null): void;
     clear(): void;
     onSelected(item: CompleterItem): void;
     selectCurrent(): void;

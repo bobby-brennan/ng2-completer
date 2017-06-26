@@ -22,14 +22,14 @@ var CtrInput = (function () {
         this.overrideSuggested = false;
         this.fillHighlighted = true;
         this.openOnFocus = false;
-        this.tokenSeparator = null;
+        this.tokenSeparator = '';
         this.ngModelChange = new EventEmitter();
         this._searchStr = "";
         this._displayStr = "";
         this.blurTimer = null;
         var getValueFromItem = function (item) {
             if (!item) {
-                return;
+                return '';
             }
             if (_this.tokenSeparator) {
                 var tokens = _this.searchStr.split(_this.tokenSeparator);
@@ -63,11 +63,13 @@ var CtrInput = (function () {
                 _this.ngModelChange.emit(_this._displayStr);
             }
         });
-        this.ngModel.valueChanges.subscribe(function (value) {
-            if (!isNil(value) && _this._displayStr !== value) {
-                _this.search(value);
-            }
-        });
+        if (this.ngModel.valueChanges) {
+            this.ngModel.valueChanges.subscribe(function (value) {
+                if (!isNil(value) && _this._displayStr !== value) {
+                    _this.search(value);
+                }
+            });
+        }
     }
     CtrInput.prototype.search = function (value) {
         this.searchStr = value;
@@ -90,14 +92,16 @@ var CtrInput = (function () {
             this.search(this.searchStr);
         }
         else if (event.keyCode === KEY_ES) {
-            this.restoreSearchValue();
-            this.completer.clear();
-        }
-        else {
-            if (this.searchStr) {
-                this.completer.open();
+            if (this.completer.isOpen) {
+                this.restoreSearchValue();
+                this.completer.clear();
+                event.stopPropagation();
+                event.preventDefault();
             }
         }
+    };
+    CtrInput.prototype.keypressHandler = function (event) {
+        this.completer.open();
     };
     CtrInput.prototype.keydownHandler = function (event) {
         if (event.keyCode === KEY_EN) {
@@ -122,6 +126,9 @@ var CtrInput = (function () {
             // This is very specific to IE10/11 #272
             // without this, IE clears the input text
             event.preventDefault();
+            if (this.completer.isOpen) {
+                event.stopPropagation();
+            }
         }
     };
     CtrInput.prototype.onBlur = function (event) {
@@ -134,23 +141,9 @@ var CtrInput = (function () {
             }, 0);
             return;
         }
-        this.blurTimer = Observable.timer(200).subscribe(function () {
-            _this.blurTimer.unsubscribe();
-            _this.blurTimer = null;
-            if (_this.overrideSuggested) {
-                _this.completer.onSelected({ title: _this.searchStr, originalObject: null });
-            }
-            else {
-                if (_this.clearUnselected && !_this.completer.hasSelected) {
-                    _this.searchStr = "";
-                    _this.ngModelChange.emit(_this.searchStr);
-                }
-                else {
-                    _this.restoreSearchValue();
-                }
-            }
-            _this.completer.clear();
-        });
+        if (this.completer.isOpen) {
+            this.blurTimer = Observable.timer(200).subscribe(function () { return _this.doBlur(); });
+        }
     };
     CtrInput.prototype.onfocus = function () {
         if (this.blurTimer) {
@@ -191,6 +184,25 @@ var CtrInput = (function () {
             }
         }
     };
+    CtrInput.prototype.doBlur = function () {
+        if (this.blurTimer) {
+            this.blurTimer.unsubscribe();
+            this.blurTimer = null;
+        }
+        if (this.overrideSuggested) {
+            this.completer.onSelected({ title: this.searchStr, originalObject: null });
+        }
+        else {
+            if (this.clearUnselected && !this.completer.hasSelected) {
+                this.searchStr = "";
+                this.ngModelChange.emit(this.searchStr);
+            }
+            else {
+                this.restoreSearchValue();
+            }
+        }
+        this.completer.clear();
+    };
     return CtrInput;
 }());
 export { CtrInput };
@@ -214,8 +226,9 @@ CtrInput.propDecorators = {
     'tokenSeparator': [{ type: Input, args: ["tokenSeparator",] },],
     'ngModelChange': [{ type: Output },],
     'keyupHandler': [{ type: HostListener, args: ["keyup", ["$event"],] },],
+    'keypressHandler': [{ type: HostListener, args: ["keypress", ["$event"],] },],
     'keydownHandler': [{ type: HostListener, args: ["keydown", ["$event"],] },],
     'onBlur': [{ type: HostListener, args: ["blur", ["$event"],] },],
-    'onfocus': [{ type: HostListener, args: ["focus", ["$event"],] },],
+    'onfocus': [{ type: HostListener, args: ["focus", [],] },],
 };
 //# sourceMappingURL=ctr-input.js.map

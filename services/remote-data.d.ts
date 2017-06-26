@@ -1,6 +1,7 @@
 import { Http, Headers, RequestOptions } from "@angular/http";
 import "rxjs/add/operator/map";
 import "rxjs/add/operator/catch";
+import "rxjs/add/observable/of";
 import { CompleterBaseData } from "./completer-base-data";
 import { CompleterItem } from "../components/completer-item";
 export declare class RemoteData extends CompleterBaseData {
@@ -22,5 +23,5 @@ export declare class RemoteData extends CompleterBaseData {
     requestOptions(requestOptions: RequestOptions): void;
     search(term: string): void;
     cancel(): void;
-    convertToItem(data: any): CompleterItem;
+    convertToItem(data: any): CompleterItem | null;
 }

@@ -18,10 +18,12 @@ export declare class CtrInput {
     constructor(completer: CtrCompleter, ngModel: NgModel, el: ElementRef);
     search(value: string): void;
     keyupHandler(event: any): void;
+    keypressHandler(event: any): void;
     keydownHandler(event: any): void;
     onBlur(event: any): void;
     onfocus(): void;
     searchStr: string;
     private handleSelection();
     private restoreSearchValue();
+    private doBlur();
 }

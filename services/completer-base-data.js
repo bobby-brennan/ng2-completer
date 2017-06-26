@@ -35,7 +35,7 @@ var CompleterBaseData = (function (_super) {
     CompleterBaseData.prototype.convertToItem = function (data) {
         var image = null;
         var formattedText;
-        var formattedDesc;
+        var formattedDesc = null;
         if (this._titleField) {
             formattedText = this.extractTitle(data);
         }

@@ -1,5 +1,5 @@
 "use strict";
-import { Component, Input, Output, EventEmitter, ViewChild, forwardRef } from "@angular/core";
+import { ChangeDetectorRef, Component, Input, Output, EventEmitter, ViewChild, forwardRef } from "@angular/core";
 import { FormControl, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { CtrCompleter } from "../directives/ctr-completer";
 import { CompleterService } from "../services/completer-service";
@@ -12,8 +12,9 @@ var COMPLETER_CONTROL_VALUE_ACCESSOR = {
     multi: true
 };
 var CompleterCmp = (function () {
-    function CompleterCmp(completerService) {
+    function CompleterCmp(completerService, cdr) {
         this.completerService = completerService;
+        this.cdr = cdr;
         this.inputName = "";
         this.inputId = "";
         this.pause = PAUSE;
@@ -29,7 +30,7 @@ var CompleterCmp = (function () {
         this.autofocus = false;
         this.openOnFocus = false;
         this.autoHighlight = false;
-        this.tokenSeparator = null;
+        this.tokenSeparator = '';
         this.selected = new EventEmitter();
         this.highlighted = new EventEmitter();
         this.blur = new EventEmitter();
@@ -67,9 +68,12 @@ var CompleterCmp = (function () {
         }
     };
     CompleterCmp.prototype.ngAfterViewChecked = function () {
+        var _this = this;
         if (this._focus) {
-            this.ctrInput.nativeElement.focus();
-            this._focus = false;
+            setTimeout(function () {
+                _this.ctrInput.nativeElement.focus();
+                _this._focus = false;
+            }, 0);
         }
     };
     CompleterCmp.prototype.onTouched = function () {
@@ -83,6 +87,9 @@ var CompleterCmp = (function () {
     };
     CompleterCmp.prototype.registerOnTouched = function (fn) {
         this._onTouchedCallback = fn;
+    };
+    CompleterCmp.prototype.setDisabledState = function (isDisabled) {
+        this.disableInput = isDisabled;
     };
     Object.defineProperty(CompleterCmp.prototype, "datasource", {
         set: function (source) {
@@ -105,7 +112,7 @@ var CompleterCmp = (function () {
         set: function (text) {
             if (this._textNoResults != text) {
                 this._textNoResults = text;
-                this.displayNoResults = this._textNoResults && this._textNoResults !== "false";
+                this.displayNoResults = !!this._textNoResults && this._textNoResults !== "false";
             }
         },
         enumerable: true,
@@ -115,7 +122,7 @@ var CompleterCmp = (function () {
         set: function (text) {
             if (this._textSearching != text) {
                 this._textSearching = text;
-                this.displaySearching = this._textSearching && this._textSearching !== "false";
+                this.displaySearching = !!this._textSearching && this._textSearching !== "false";
             }
         },
         enumerable: true,
@@ -137,6 +144,7 @@ var CompleterCmp = (function () {
     CompleterCmp.prototype.onBlur = function () {
         this.blur.emit();
         this.onTouched();
+        this.cdr.detectChanges();
     };
     CompleterCmp.prototype.onFocus = function () {
         this.focusEvent.emit();
@@ -174,7 +182,7 @@ export { CompleterCmp };
 CompleterCmp.decorators = [
     { type: Component, args: [{
                 selector: "ng2-completer",
-                template: "\n        <div class=\"completer-holder\" ctrCompleter>\n            <input #ctrInput [attr.id]=\"inputId.length > 0 ? inputId : null\" type=\"search\" class=\"completer-input\" ctrInput [ngClass]=\"inputClass\"\n                [(ngModel)]=\"searchStr\" (ngModelChange)=\"onChange($event)\" [attr.name]=\"inputName\" [placeholder]=\"placeholder\"\n                [attr.maxlength]=\"maxChars\" [tabindex]=\"fieldTabindex\" [disabled]=\"disableInput\"\n                [clearSelected]=\"clearSelected\" [clearUnselected]=\"clearUnselected\"\n                [overrideSuggested]=\"overrideSuggested\" [openOnFocus]=\"openOnFocus\" [fillHighlighted]=\"fillHighlighted\"\n                [tokenSeparator]=\"tokenSeparator\"\n                (blur)=\"onBlur()\" (focus)=\"onFocus()\" (keyup)=\"onKeyup($event)\" (keydown)=\"onKeydown($event)\"\n                autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" />\n\n            <div class=\"completer-dropdown-holder\"\n                *ctrList=\"dataService;\n                    minSearchLength: minSearchLength;\n                    pause: pause;\n                    autoMatch: autoMatch;\n                    initialValue: initialValue;\n                    autoHighlight: autoHighlight;\n                    let items = results;\n                    let searchActive = searching;\n                    let isInitialized = searchInitialized;\n                    let isOpen = isOpen;\">\n                <div class=\"completer-dropdown\" ctrDropdown *ngIf=\"isInitialized && isOpen && ((items.length > 0 || displayNoResults) || (searchActive && displaySearching))\">\n                    <div *ngIf=\"searchActive && displaySearching\" class=\"completer-searching\">{{_textSearching}}</div>\n                    <div *ngIf=\"!searchActive && (!items || items.length === 0)\" class=\"completer-no-results\">{{_textNoResults}}</div>\n                    <div class=\"completer-row-wrapper\" *ngFor=\"let item of items; let rowIndex=index\">\n                        <div class=\"completer-row\" [ctrRow]=\"rowIndex\" [dataItem]=\"item\">\n                            <div *ngIf=\"item.image || item.image === ''\" class=\"completer-image-holder\">\n                                <img *ngIf=\"item.image != ''\" src=\"{{item.image}}\" class=\"completer-image\" />\n                                <div *ngIf=\"item.image === ''\" class=\"completer-image-default\"></div>\n                            </div>\n                            <div class=\"completer-item-text\" [ngClass]=\"{'completer-item-text-image': item.image || item.image === '' }\">\n                                <completer-list-item class=\"completer-title\" [text]=\"item.title\" [matchClass]=\"matchClass\" [searchStr]=\"searchStr\" [type]=\"'title'\"></completer-list-item>\n                                <completer-list-item *ngIf=\"item.description && item.description != ''\" class=\"completer-description\" [text]=\"item.description\"\n                                    [matchClass]=\"matchClass\" [searchStr]=\"searchStr\" [type]=\"'description'\">\n                                </completer-list-item>\n                            </div>\n                        </div>\n                    </div>\n                </div>\n            </div>\n        </div>\n    ",
+                template: "\n        <div class=\"completer-holder\" ctrCompleter>\n            <input #ctrInput [attr.id]=\"inputId.length > 0 ? inputId : null\" type=\"search\" class=\"completer-input\" ctrInput [ngClass]=\"inputClass\"\n                [(ngModel)]=\"searchStr\" (ngModelChange)=\"onChange($event)\" [attr.name]=\"inputName\" [placeholder]=\"placeholder\"\n                [attr.maxlength]=\"maxChars\" [tabindex]=\"fieldTabindex\" [disabled]=\"disableInput\"\n                [clearSelected]=\"clearSelected\" [clearUnselected]=\"clearUnselected\"\n                [overrideSuggested]=\"overrideSuggested\" [openOnFocus]=\"openOnFocus\" [fillHighlighted]=\"fillHighlighted\"\n                [tokenSeparator]=\"tokenSeparator\"\n                (blur)=\"onBlur()\" (focus)=\"onFocus()\" (keyup)=\"onKeyup($event)\" (keydown)=\"onKeydown($event)\"\n                autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" />\n\n            <div class=\"completer-dropdown-holder\"\n                *ctrList=\"dataService;\n                    minSearchLength: minSearchLength;\n                    pause: pause;\n                    autoMatch: autoMatch;\n                    initialValue: initialValue;\n                    autoHighlight: autoHighlight;\n                    displaySearching: displaySearching;\n                    let items = results;\n                    let searchActive = searching;\n                    let isInitialized = searchInitialized;\n                    let isOpen = isOpen;\">\n                <div class=\"completer-dropdown\" ctrDropdown *ngIf=\"isInitialized && isOpen && ((items.length > 0 || (displayNoResults && !searchActive)) || (searchActive && displaySearching))\">\n                    <div *ngIf=\"searchActive && displaySearching\" class=\"completer-searching\">{{_textSearching}}</div>\n                    <div *ngIf=\"!searchActive && (!items || items.length === 0)\" class=\"completer-no-results\">{{_textNoResults}}</div>\n                    <div class=\"completer-row-wrapper\" *ngFor=\"let item of items; let rowIndex=index\">\n                        <div class=\"completer-row\" [ctrRow]=\"rowIndex\" [dataItem]=\"item\">\n                            <div *ngIf=\"item.image || item.image === ''\" class=\"completer-image-holder\">\n                                <img *ngIf=\"item.image != ''\" src=\"{{item.image}}\" class=\"completer-image\" />\n                                <div *ngIf=\"item.image === ''\" class=\"completer-image-default\"></div>\n                            </div>\n                            <div class=\"completer-item-text\" [ngClass]=\"{'completer-item-text-image': item.image || item.image === '' }\">\n                                <completer-list-item class=\"completer-title\" [text]=\"item.title\" [matchClass]=\"matchClass\" [searchStr]=\"searchStr\" [type]=\"'title'\"></completer-list-item>\n                                <completer-list-item *ngIf=\"item.description && item.description != ''\" class=\"completer-description\" [text]=\"item.description\"\n                                    [matchClass]=\"matchClass\" [searchStr]=\"searchStr\" [type]=\"'description'\">\n                                </completer-list-item>\n                            </div>\n                        </div>\n                    </div>\n                </div>\n            </div>\n        </div>\n    ",
                 styles: ["\n    .completer-dropdown {\n        border-color: #ececec;\n        border-width: 1px;\n        border-style: solid;\n        border-radius: 2px;\n        width: 250px;\n        padding: 6px;\n        cursor: pointer;\n        z-index: 9999;\n        position: absolute;\n        margin-top: -6px;\n        background-color: #ffffff;\n    }\n\n    .completer-row {\n        padding: 5px;\n        color: #000000;\n        margin-bottom: 4px;\n        clear: both;\n        display: inline-block;\n        width: 103%;\n    }\n\n    .completer-selected-row {\n        background-color: lightblue;\n        color: #ffffff;\n    }\n\n    .completer-description {\n        font-size: 14px;\n    }\n\n    .completer-image-default {\n        width: 16px; \n        height: 16px;\n        background-image: url(\"demo/res/img/default.png\");\n    }\n\n    .completer-image-holder {\n        float: left;\n        width: 10%;\n    }\n    .completer-item-text-image {\n        float: right;\n        width: 90%;\n    }\n    "],
                 providers: [COMPLETER_CONTROL_VALUE_ACCESSOR]
             },] },
@@ -182,6 +190,7 @@ CompleterCmp.decorators = [
 /** @nocollapse */
 CompleterCmp.ctorParameters = function () { return [
     { type: CompleterService, },
+    { type: ChangeDetectorRef, },
 ]; };
 CompleterCmp.propDecorators = {
     'dataService': [{ type: Input },],

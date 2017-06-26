@@ -9,8 +9,10 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 import { Headers, RequestOptions } from "@angular/http";
+import { Observable } from "rxjs/Observable";
 import "rxjs/add/operator/map";
 import "rxjs/add/operator/catch";
+import "rxjs/add/observable/of";
 import { CompleterBaseData } from "./completer-base-data";
 var RemoteData = (function (_super) {
     __extends(RemoteData, _super);
@@ -61,7 +63,7 @@ var RemoteData = (function (_super) {
             this._requestOptions = new RequestOptions();
             this._requestOptions.headers = this._headers || new Headers();
         }
-        this.remoteSearch = this.http.get(url, this._requestOptions)
+        this.remoteSearch = this.http.get(url, this._requestOptions.merge())
             .map(function (res) { return res.json(); })
             .map(function (data) {
             var matches = _this.extractValue(data, _this._dataField);
@@ -74,7 +76,7 @@ var RemoteData = (function (_super) {
         })
             .catch(function (err) {
             _this.error(err);
-            return null;
+            return Observable.of(null);
         })
             .subscribe();
     };

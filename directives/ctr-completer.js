@@ -39,14 +39,14 @@ var CtrCompleter = (function () {
         }
     };
     CtrCompleter.prototype.clear = function () {
+        this._hasHighlighted = false;
+        this.isOpen = false;
         if (this.dropdown) {
             this.dropdown.clear();
         }
         if (this.list) {
             this.list.clear();
         }
-        this._hasHighlighted = false;
-        this.isOpen = false;
     };
     CtrCompleter.prototype.selectCurrent = function () {
         if (this.dropdown) {
@@ -98,6 +98,9 @@ var CtrCompleter = (function () {
         },
         set: function (index) {
             this._autoHighlightIndex = index;
+            if (this.dropdown) {
+                this.dropdown.highlightRow(this._autoHighlightIndex);
+            }
         },
         enumerable: true,
         configurable: true

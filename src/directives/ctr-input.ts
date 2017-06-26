@@ -27,18 +27,18 @@ export class CtrInput {
     @Input("overrideSuggested") public overrideSuggested = false;
     @Input("fillHighlighted") public fillHighlighted = true;
     @Input("openOnFocus") public openOnFocus = false;
-    @Input("tokenSeparator") public tokenSeparator:string = null;
+    @Input("tokenSeparator") public tokenSeparator:string = '';
 
     @Output() public ngModelChange: EventEmitter<any> = new EventEmitter();
 
     private _searchStr = "";
     private _displayStr = "";
-    private blurTimer: Subscription = null;
+    private blurTimer: Subscription | null = null;
 
     constructor( @Host() private completer: CtrCompleter, private ngModel: NgModel, private el: ElementRef) {
         let getValueFromItem = (item: CompleterItem) => {
             if (!item) {
-                return;
+                return '';
             }
             if (this.tokenSeparator) {
                 let tokens = this.searchStr.split(this.tokenSeparator);
@@ -70,11 +70,14 @@ export class CtrInput {
                 this.ngModelChange.emit(this._displayStr);
             }
         });
-        this.ngModel.valueChanges.subscribe(value => {
-            if (!isNil(value) && this._displayStr !== value) {
-                this.search(value);
-            }
-        });
+
+        if (this.ngModel.valueChanges) {
+            this.ngModel.valueChanges.subscribe(value => {
+                if (!isNil(value) && this._displayStr !== value) {
+                    this.search(value);
+                }
+            });
+        }
     }
 
     search(value:string) {
@@ -102,14 +105,18 @@ export class CtrInput {
             this.search(this.searchStr);
         }
         else if (event.keyCode === KEY_ES) {
-            this.restoreSearchValue();
-            this.completer.clear();
-        }
-        else {
-            if (this.searchStr) {
-                this.completer.open();
+            if (this.completer.isOpen) {
+                this.restoreSearchValue();
+                this.completer.clear();
+                event.stopPropagation();
+                event.preventDefault();
             }
         }
+    }
+
+    @HostListener("keypress", ["$event"])
+    public keypressHandler(event: any) {
+        this.completer.open();
     }
 
     @HostListener("keydown", ["$event"])
@@ -132,6 +139,9 @@ export class CtrInput {
             // This is very specific to IE10/11 #272
             // without this, IE clears the input text
             event.preventDefault();
+            if (this.completer.isOpen) {
+                event.stopPropagation();
+            }
         }
     }
 
@@ -148,31 +158,19 @@ export class CtrInput {
             );
             return;
         }
-        this.blurTimer = Observable.timer(200).subscribe(
-            () => {
-                this.blurTimer.unsubscribe();
-                this.blurTimer = null;
-                if (this.overrideSuggested) {
-                    this.completer.onSelected({ title: this.searchStr, originalObject: null });
-                } else {
-                    if (this.clearUnselected && !this.completer.hasSelected) {
-                        this.searchStr = "";
-                        this.ngModelChange.emit(this.searchStr);
-                    } else {
-                        this.restoreSearchValue();
-                    }
-                }
-                this.completer.clear();
-            }
-        );
+
+        if (this.completer.isOpen) {
+            this.blurTimer = Observable.timer(200).subscribe(() => this.doBlur());
+        }
     }
 
-    @HostListener("focus", ["$event"])
+    @HostListener("focus", [])
     public onfocus() {
         if (this.blurTimer) {
             this.blurTimer.unsubscribe();
             this.blurTimer = null;
         }
+
         if (this.openOnFocus) {
             this.completer.open();
         }
@@ -204,5 +202,25 @@ export class CtrInput {
                 this.ngModelChange.emit(this.searchStr);
             }
         }
+    }
+
+    private doBlur() {
+        if (this.blurTimer) {
+            this.blurTimer.unsubscribe();
+            this.blurTimer = null;
+        }
+
+        if (this.overrideSuggested) {
+            this.completer.onSelected({ title: this.searchStr, originalObject: null });
+        } else {
+            if (this.clearUnselected && !this.completer.hasSelected) {
+                this.searchStr = "";
+                this.ngModelChange.emit(this.searchStr);
+            } else {
+                this.restoreSearchValue();
+            }
+        }
+
+        this.completer.clear();
     }
 }
