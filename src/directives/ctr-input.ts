@@ -27,7 +27,7 @@ export class CtrInput {
     @Input("overrideSuggested") public overrideSuggested = false;
     @Input("fillHighlighted") public fillHighlighted = true;
     @Input("openOnFocus") public openOnFocus = false;
-    @Input("tokenSeparator") public tokenSeparator:string = null;
+    @Input("tokenSeparator") public tokenSeparator:string = '';
 
     @Output() public ngModelChange: EventEmitter<any> = new EventEmitter();
 
@@ -38,7 +38,7 @@ export class CtrInput {
     constructor( @Host() private completer: CtrCompleter, private ngModel: NgModel, private el: ElementRef) {
         let getValueFromItem = (item: CompleterItem) => {
             if (!item) {
-                return;
+                return '';
             }
             if (this.tokenSeparator) {
                 let tokens = this.searchStr.split(this.tokenSeparator);
