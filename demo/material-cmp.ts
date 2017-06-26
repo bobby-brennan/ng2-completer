@@ -1,8 +1,6 @@
 "use strict";
 import { Component } from "@angular/core";
 
-import "rxjs/Rx";
-
 import { CompleterService, CompleterData } from "../src";
 
 let template = require("./material-cmp.html");

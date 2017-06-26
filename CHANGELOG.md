@@ -1,6 +1,32 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 1.5.2 (2017-06-16)
+
+### Fixed bugs
+- ng build --prod error: #245
+
+## 1.5.1 (2017-06-14)
+
+### Fixed bugs
+- Dropdown doesn't open when typing one character #255
+- Scroll issues
+
+## 1.5.0 (2017-06-09)
+
+### Implemented enhancements
+- Add strict null check to tsconfig.json #201
+- performance improvements
+- prevent flickering when not using `textSearching`
+- add `setDisabledState` to component
+
+### Fixed bugs
+- prevent esc key from bubbling up when dropdown is open
+- autofocus causing an error
+- AOT build issue with `onFocus`
+- searching the same term twice causes different results #216
+- minimum search length behavior weird. #232
+
 ## 1.4.0 (2017-04-22)
 
 ### Implemented enhancements
