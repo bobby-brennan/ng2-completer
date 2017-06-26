@@ -197,3 +197,7 @@ Create remote data provider by calling `CompleterService.remote`.
 * `.completer-list-item-holder`
 * `.completer-list-item`
 * `.completer-selected-row`
+
+## Credits
+
+* This product uses the TMDb API but is not endorsed or certified by TMDb
