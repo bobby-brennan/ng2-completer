@@ -24,6 +24,7 @@ export class CtrCompleter {
     @Output() public selected = new EventEmitter<CompleterItem | null>();
     @Output() public highlighted = new EventEmitter<CompleterItem | null>();
     @Output() public opened = new EventEmitter<boolean>();
+    @Output() public dataSourceChange = new EventEmitter<void>();
 
     private list: CompleterList;
     private dropdown: CompleterDropdown | null;
@@ -54,6 +55,14 @@ export class CtrCompleter {
         if (clearList) {
             this.clear();
         }
+    }
+
+    public onDataSourceChange() {
+        if (this.hasSelected) {
+            this.selected.emit(null);
+            this._hasSelected = false;
+        }
+        this.dataSourceChange.emit();
     }
 
     public search(term: string) {

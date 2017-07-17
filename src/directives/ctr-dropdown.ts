@@ -23,6 +23,7 @@ export class CtrDropdown implements CompleterDropdown, OnDestroy, AfterViewInit 
     private rows: CtrRowItem[] = [];
     private currHighlighted: CtrRowItem | undefined;
     private isScrollOn: boolean;
+    private _rowMouseDown: boolean = false;
 
     constructor( @Host() private completer: CtrCompleter, private el: ElementRef) {
         this.completer.registerDropdown(this);
@@ -49,13 +50,18 @@ export class CtrDropdown implements CompleterDropdown, OnDestroy, AfterViewInit 
 
     @HostListener("mousedown", ["$event"]) public onMouseDown(event: any) {
         // Support for canceling blur on IE (issue #158)
-        this.completer.cancelBlur(true);
-        setTimeout(
-            () => {
-                this.completer.cancelBlur(false);
-            },
-            0
-        );
+        if (!this._rowMouseDown) {
+            this.completer.cancelBlur(true);
+            setTimeout(
+                () => {
+                    this.completer.cancelBlur(false);
+                },
+                0
+            );
+        } else {
+            this._rowMouseDown = false;
+        }
+        
     }
 
     public registerRow(row: CtrRowItem) {
@@ -126,6 +132,10 @@ export class CtrDropdown implements CompleterDropdown, OnDestroy, AfterViewInit 
 
     public onSelected(item: CompleterItem) {
         this.completer.onSelected(item);
+    }
+
+    public rowMouseDown() {
+        this._rowMouseDown = true;
     }
 
     public selectCurrent() {

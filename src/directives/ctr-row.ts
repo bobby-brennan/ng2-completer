@@ -39,6 +39,10 @@ export class CtrRow implements CtrRowElement, OnDestroy {
         this.dropdown.highlightRow(this._rowIndex);
     }
 
+    @HostListener("mousedown", ["$event"]) public onMouseDown(event: any) {
+        this.dropdown.rowMouseDown();
+    }
+
     public setHighlighted(selected: boolean) {
         this.selected = selected;
         this.renderer.setElementClass(this.el.nativeElement, "completer-selected-row", this.selected);

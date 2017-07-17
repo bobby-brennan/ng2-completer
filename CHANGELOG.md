@@ -1,6 +1,31 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 1.6.0 (2017-07-15)
+
+### Implemented enhancements
+- Clear selected and input value when `dataSourceChange` emits
+
+### Fixed bugs
+- Cannot read property 'dataSourceChange' of undefined #279
+- RemoteData search - dropdown list not showing after first http request error (e.g. no Internet connection) #131
+
+## 1.5.4 (2017-07-14)
+
+### Implemented enhancements
+- Add `dataSourceChange` to `CompleterData` to detect changes in the data source 
+
+## 1.5.3 (2017-07-14)
+
+### Implemented enhancements
+- Add a blur() method? #217
+
+### Fixed bugs
+- Dropdown is not opened when using backspace after a value is selected #261
+- On text paste the search doesn't get triggered #265
+- "flase" should be "false" on line 202 @ ng2-completer/demo/native-cmp.html #271
+- Demo not working on Android Chrome 59 #270
+
 ## 1.5.2 (2017-06-16)
 
 ### Fixed bugs
