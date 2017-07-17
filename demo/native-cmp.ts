@@ -64,6 +64,7 @@ export class NativeCmp {
     public color2: string = "lig";
 
     @ViewChild("openCloseExample") private openCloseExample: CompleterCmp;
+    @ViewChild("remoteDataExample") private remoteDataExample: CompleterCmp;
 
     private dataService: CompleterData;
     private dataService2: CompleterData;
@@ -102,6 +103,7 @@ export class NativeCmp {
     public onCountrySelected(selected: CompleterItem) {
         if (selected) {
             this.countryName2 = selected.title;
+            this.remoteDataExample.blur();
         } else {
             this.countryName2 = "";
         }

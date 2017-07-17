@@ -2,7 +2,8 @@ import "rxjs/add/observable/timer";
 import { ChangeDetectorRef, Directive, EmbeddedViewRef, Host, Input, OnInit, TemplateRef, ViewContainerRef } from "@angular/core";
 import { Observable } from "rxjs/Observable";
 import { Subscription } from "rxjs/Subscription";
-
+import "rxjs/add/operator/retryWhen";
+import "rxjs/add/operator/do";
 
 import { CtrCompleter, CompleterList } from "./ctr-completer";
 import { CompleterData } from "../services/completer-data";
@@ -12,7 +13,7 @@ import { MIN_SEARCH_LENGTH, PAUSE, CLEAR_TIMEOUT, isNil } from "../globals";
 
 export class CtrListContext {
     constructor(
-        public results: CompleterItem[],
+        public results: CompleterItem[] | null,
         public searching: boolean,
         public searchInitialized: boolean,
         public isOpen: boolean
@@ -56,33 +57,7 @@ export class CtrList implements OnInit, CompleterList {
     @Input("ctrList")
     public set dataService(newService: CompleterData) {
         this._dataService = newService;
-        if (this._dataService) {
-            this._dataService
-                .catch(err => this.handleError(err))
-                .subscribe(results => {
-                    this.ctx.searchInitialized = true;
-                    this.ctx.searching = false;
-                    this.ctx.results = results;
-
-                    if (this.ctrListAutoMatch && results.length === 1 && results[0].title && !isNil(this.term) &&
-                        results[0].title.toLocaleLowerCase() === this.term!.toLocaleLowerCase()) {
-                        // Do automatch
-                        this.completer.onSelected(results[0]);
-                        return;
-                    }
-
-                    if (this._initialValue) {
-                        this.initialValue = this._initialValue;
-                        this._initialValue = null;
-                    }
-
-                    this.refreshTemplate();
-
-                    if (this.ctrListAutoHighlight) {
-                        this.completer.autoHighlightIndex = this.getBestMatchIndex();
-                    }
-                });
-        }
+        this.dataServiceSubscribe();
     }
 
     @Input("ctrListInitialValue")
@@ -168,22 +143,6 @@ export class CtrList implements OnInit, CompleterList {
         this._dataService.search(term);
     }
 
-    private handleError(error: any) {
-        this.ctx.searching = false;
-        let errMsg: string = "search error";
-        if (error) {
-            errMsg = (error.message) ? error.message :
-                error.status ? `${error.status} - ${error.statusText}` : "Server error";
-        }
-
-        if (console && console.error) {
-            console.error(errMsg); // log to console
-        }
-        this.refreshTemplate();
-
-        return Observable.throw(errMsg);
-    }
-
     private refreshTemplate() {
         // create the template if it doesn't exist
         if (!this.viewRef) {
@@ -219,6 +178,51 @@ export class CtrList implements OnInit, CompleterList {
         }
 
         return bestMatch < 0 ? null : bestMatch;
+    }
+
+    private dataServiceSubscribe() {
+        if (this._dataService) {
+            this._dataService
+                .catch(err => {
+                    console.error(err);
+                    console.error("Unexpected error in dataService: errors should be handled by the dataService Observable");
+                    return [];
+                })
+                .subscribe(results => {
+                    this.ctx.searchInitialized = true;
+                    this.ctx.searching = false;
+                    this.ctx.results = results;
+
+                    if (this.ctrListAutoMatch && results && results.length === 1 && results[0].title && !isNil(this.term) &&
+                        results[0].title.toLocaleLowerCase() === this.term!.toLocaleLowerCase()) {
+                        // Do automatch
+                        this.completer.onSelected(results[0]);
+                        return;
+                    }
+
+                    if (this._initialValue) {
+                        this.initialValue = this._initialValue;
+                        this._initialValue = null;
+                    }
+
+                    this.refreshTemplate();
+
+                    if (this.ctrListAutoHighlight) {
+                        this.completer.autoHighlightIndex = this.getBestMatchIndex();
+                    }
+                });
+
+            if (this._dataService.dataSourceChange) {
+                this._dataService.dataSourceChange.subscribe(() => {
+                    this.term = null;
+                    this.ctx.searchInitialized = false;
+                    this.ctx.searching = false;
+                    this.ctx.results = [];
+                    this.refreshTemplate();
+                    this.completer.onDataSourceChange();
+                });
+            }
+        }
     }
 
 }
