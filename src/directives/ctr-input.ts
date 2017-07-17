@@ -33,7 +33,7 @@ export class CtrInput {
     @Input("openOnFocus") public openOnFocus = false;
     @Input("openOnClick") public openOnClick = false;
     @Input("selectOnClick") public selectOnClick = false;
-    @Input("tokenSeparator") public tokenSeparator:string = null;
+    @Input("tokenSeparator") public tokenSeparator:string = '';
 
     @Output() public ngModelChange: EventEmitter<any> = new EventEmitter();
 
